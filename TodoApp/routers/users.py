@@ -1,7 +1,7 @@
 from typing import Annotated
 from sqlalchemy.orm import Session
-from database import SessionLocal
-from models import Todos, Users
+from ..database import SessionLocal
+from ..models import Todos, Users
 from starlette import status
 from fastapi import APIRouter, Depends, HTTPException, Path
 from pydantic import BaseModel, Field
@@ -43,7 +43,7 @@ async def change_password(user: user_dependency, db: db_dependency, user_verific
     if not bcrypt_context.verify(user_verification.password, user_model.hashed_password):
         raise HTTPException(status_code=401, detail='Error on password change')
     user_model.hashed_password = bcrypt_context.hash(user_verification.new_password)
-    db.add(user_model)
+    db.add(user_model)  
     db.commit()
 
 @router.put('/phonenumber/{phone_number}', status_code=status.HTTP_204_NO_CONTENT)
