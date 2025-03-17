@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, status, HTTPException, Request
 from pydantic import BaseModel
 from ..models import Users
 from passlib.context import CryptContext
@@ -8,6 +8,7 @@ from ..database import SessionLocal
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import jwt, JWTError
 from datetime import datetime, timedelta
+from fastapi.templating import Jinja2Templates
 
 router = APIRouter(
     prefix='/auth',
@@ -41,6 +42,20 @@ def get_db():
         db.close
 
 db_dependency = Annotated[Session, Depends(get_db)]
+
+templates = Jinja2Templates(directory="TodoApp/templates")
+
+### Page ###
+
+@router.get("/login-page")
+def render_login_page(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
+
+@router.get("/register-page")
+def render_register_page(request: Request):
+    return templates.TemplateResponse("register.html", {"request": request})
+
+## Endpointa ##
 
 def authenticate_user(username: str, password: str, db):
     user = db.query(Users).filter(Users.username == username).first()
@@ -87,7 +102,7 @@ async def create_user(db: db_dependency, create_user_request: CreateUserRequest)
 
 @router.post('/token', response_model=Token)
 async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: db_dependency):
-    user = authenticate_user(form_data.username, form_data.password, db)  # ✅ Correct
+    user = authenticate_user(form_data.username, form_data.password, db)  
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Could not validate user.')
     token = create_access_token(user.username, user.id, user.role, timedelta(minutes=20))
