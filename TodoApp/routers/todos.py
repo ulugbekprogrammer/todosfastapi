@@ -32,8 +32,10 @@ class TodoRequest(BaseModel):
     priority: int = Field(gt=0, lt=6)
     complete: bool
 
+templates = Jinja2Templates(directory="TodoApp/templates")
+
 def redirect_to_login():
-    redirect_response = RedirectResponse(url='/login', status_code=status.HTTP_302_FOUND)
+    redirect_response = RedirectResponse(url='/auth/login-page', status_code=status.HTTP_302_FOUND)
     redirect_response.delete_cookie(key='access_token')
     return redirect_response
 
