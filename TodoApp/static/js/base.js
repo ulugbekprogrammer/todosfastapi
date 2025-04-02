@@ -249,3 +249,28 @@
         // Redirect to the login page
         window.location.href = '/auth/login-page';
     };
+
+    // Search JS
+    function searchUser() {
+        let userId = document.getElementById("user_id").value;
+        console.log(userId)
+        let resultDiv = document.getElementById("result");
+    
+        if (!userId) {
+            resultDiv.innerHTML = "<p style='color:red;'>Введите ID!</p>";
+            return;
+        }
+    
+        fetch(`/user/search/?user_id=${userId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.id) {
+                    resultDiv.innerHTML = `<p>Пользователь найден: <strong>${data.username}</strong> (ID: ${data.id})</p>`;
+                } else {
+                    resultDiv.innerHTML = "<p style='color:red;'>Пользователь не найден</p>";
+                }
+            })
+            .catch(error => {
+                resultDiv.innerHTML = "<p style='color:red;'>Ошибка запроса</p>";
+            });
+    }

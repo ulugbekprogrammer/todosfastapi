@@ -1,13 +1,14 @@
 from typing import Annotated
 from sqlalchemy.orm import Session
 from ..database import SessionLocal
-from ..models import Todos
+from ..models import Todos, Users
 from starlette import status
 from fastapi import APIRouter, Depends, HTTPException, Path, Request, status
 from pydantic import BaseModel, Field
 from .auth import get_current_user
 from starlette.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
+from sqlalchemy import text
 
 templates = Jinja2Templates(directory="TodoApp/templates")
 
@@ -21,7 +22,7 @@ def get_db():
     try:
         yield db
     finally:
-        db.close()  
+        db.close()
 
 db_dependency = Annotated[Session, Depends(get_db)]
 user_dependency = Annotated[dict, Depends(get_current_user)]
@@ -65,6 +66,7 @@ async def render_todo_page(request: Request):
         return templates.TemplateResponse('add-todo.html', {'request': request, 'user': user})
     except:
         return redirect_to_login()
+    
 @router.get('/edit-todo-page/{todo_id}')
 async def render_edit_todo_page(request: Request, todo_id: int, db: db_dependency):
     try: 

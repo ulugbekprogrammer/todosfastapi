@@ -10,11 +10,17 @@
             {% if user %}
             <li class="nav-item active">
                 <a href="/todos/todo-page" class="nav-link">Home</a>
+                <a href="/user/search-user-page" class="nav-link">Search</a>
             </li>
             {% endif %}
         </ul>
 
         <ul class="navbar-nav ml-auto">
+            {% if user and user.get('user_role') == 'admin' %}
+            <li class="nav-item m-1">
+                <input type="text" class="form-control" name="title" > 
+            </li>
+            {% endif %}
             {% if user %}
             <li class="nav-item m-1">
                 <a type="button" class="btn btn-outline-light" onclick="logout()">Logout</a>
