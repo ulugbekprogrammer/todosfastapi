@@ -252,25 +252,53 @@
 
     // Search JS
     function searchUser() {
-        let userId = document.getElementById("user_id").value;
-        console.log(userId)
-        let resultDiv = document.getElementById("result");
-    
-        if (!userId) {
-            resultDiv.innerHTML = "<p style='color:red;'>Введите ID!</p>";
-            return;
-        }
-    
-        fetch(`/user/search/?user_id=${userId}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.id) {
-                    resultDiv.innerHTML = `<p>Пользователь найден: <strong>${data.username}</strong> (ID: ${data.id})</p>`;
-                } else {
-                    resultDiv.innerHTML = "<p style='color:red;'>Пользователь не найден</p>";
-                }
-            })
-            .catch(error => {
-                resultDiv.innerHTML = "<p style='color:red;'>Ошибка запроса</p>";
-            });
+    let userId = document.getElementById("userIdInput").value;
+    let resultDiv = document.getElementById("result");
+
+    if (!userId) {
+        resultDiv.innerHTML = "<p style='color:red;'>Введите ID!</p>";
+        return;
     }
+
+    const token = getCookie('access_token');
+    console.log("Retrieved Token:", token);
+    console.log("Raw Cookies:", document.cookie);
+    if (!token) {
+        resultDiv.innerHTML = "<p style='color:red;'>Ошибка: отсутствует токен авторизации</p>";
+        return;
+    }
+
+    const url = `http://127.0.0.1:8000/user/search/?user_id=${userId}`;
+    console.log("Request URL:", url);
+    fetch(url, {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        console.log("Response Status:", response.status);
+        if (!response.ok) {
+            return response.text().then(text => {
+                throw new Error(`HTTP Error ${response.status}: ${text}`);
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log("Response Data:", JSON.stringify(data, null, 2));
+        if (data && (data.id || data.user_id)) {
+            const userId = data.id || data.user_id || "Unknown ID";
+            const username = data.username || data.name || "Unknown User";
+            resultDiv.innerHTML = `<p>Пользователь найден: <strong>${username}</strong> ID: ${userId} FirstName: ${data.first_name} LastName: ${data.last_name} </p>`;
+        } else {
+            resultDiv.innerHTML = "<p style='color:red;'>Пользователь не найден</p>";
+        }
+    })
+    .catch(error => {
+        console.error("Ошибка запроса:", error);
+        resultDiv.innerHTML = `<p style='color:red;'>Ошибка: ${error.message}</p>`;
+    });
+}
